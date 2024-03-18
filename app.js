@@ -15,14 +15,42 @@ const React = {
         };
     }
 };
+const render = (element, container) => {
+    // handle edge cases like text nodes
+    if (!element.tag) {
+        // handle text nodes
+        if (typeof element === 'string') {
+            container.appendChild(document.createTextNode(element));
+            return;
+        }
+    }
+    // create the actual dom element from the virtual dom element
+    const domElement = document.createElement(element.tag);
+    // set props
+    const elementProps = element.props ? Object.keys(element.props) : [];
+    for (let i = 0; i < elementProps.length; i++) {
+        domElement[elementProps[i]] = element.props[elementProps[i]];
+    }
+    // create the children of the virtual dom element
+    if (element.children && Array.isArray(element.children)) {
+        for (let j = 0; j < element.children.length; j++) {
+            // render each child, the first element will be the container
+            render(element.children[j], domElement);
+        }
+    }
+    // append the dom node to the container
+    container.appendChild(domElement);
+};
 //
 // The actual app
 //
+// Virtual DOM
 // Wrap the "ReactElement" in a "ReactComponent" (function)
 const App = () => {
+    const v = "A variable";
     return (React.createElement("div", { draggable: true },
         React.createElement("h2", null, "Hello React!"),
-        React.createElement("p", null, "I am a paragraph"),
+        React.createElement("p", null, v),
         React.createElement("input", { type: "text" })));
 };
-console.log(React.createElement(App, null));
+render(React.createElement(App, null), document.getElementById('root'));
